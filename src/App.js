@@ -1,26 +1,91 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, { Component } from 'react';
 import './App.css';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+import AddBookmark from './AddBookmark/AddBookmark';
+import BookmarkApp from './BookmarkApp/BookmarkApp';
+//api key: $2a$10$G7y7RyXQEpOdD5OhqND.OOPswUub2EDIZvyNoMV3sPLAO6hf6nOGK
+///v3/bookmarks
+const bookmarks = [
+	{
+		title:"Google",
+		url:"http://www.google.com",
+		rating:"3",
+		description:"No evil"
+	},
+	{
+		title:"Google",
+		url:"http://www.google.com",
+		rating:"3",
+		description:"No evil"
+	}
+];
+
+class App extends Component {
+	constructor(props) {
+		super(props);
+		this.state = {
+			bookmarks: [],
+			showAddForm: false
+		};
+	}
+	componentDidMount() {
+		const url = 'https://tf-ed-bookmarks-api.herokuapp.com/v3/bookmarks';
+		const options = {
+			method: 'GET',
+			headers: {
+				// Add your key after Bearer
+				"Authorization": "Bearer $2a$10$G7y7RyXQEpOdD5OhqND.OOPswUub2EDIZvyNoMV3sPLAO6hf6nOGK",
+				"Content-Type": "application/json"
+			}
+		};
+
+		fetch(url, options)
+			.then(response => {
+				if(!response.ok) {
+					throw new Error('Something went wrong, please try again later.');
+				}
+				return response;
+			})
+			.then(response => response.json())
+			.then(data => {
+				this.setState({
+					bookmarks: data,
+					error: null
+				});
+			})
+			.catch(err => {
+				this.setState({
+					error: err.message
+				});
+			});
+		}
+		setShowAddForm(show) {
+			this.setState({
+				showAddForm: show
+			});
+		}
+		addBookmark(bookmark) {
+			this.setState({
+				bookmarks: [...this.state.bookmarks, bookmark],
+				showAddForm: false
+			});
+		}
+		render() {
+			const page = this.state.showAddForm ?
+			<AddBookmark
+				showForm={show => this.setShowAddForm(show)}
+				handleAdd={bookmark => this.addBookmark(bookmark)} 
+			/>
+			: <BookmarkApp 
+				bookmarks={this.state.bookmarks}
+				showForm={show => this.setShowAddForm(show)}
+			/>
+		return (
+			<div className="App">
+				{page}
+			</div>
+		);
+	}
 }
 
 export default App;
